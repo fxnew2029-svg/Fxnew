@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Withdraw</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+</style>
+<body>
+  <!-- SAME NAVBAR -->
+<nav class="navbar">
+  <div class="nav-left">
+    <div class="logo">FX<span>Trade</span></div>
+
+    <div class="nav-links" id="navLinks">
+      <a href="index.html" class="nav-link active">Dashboard</a>
+      <a href="markets.html" class="nav-link">Markets</a>
+      <a href="trade.html" class="nav-link">Trade</a>
+      <a href="wallet.html" class="nav-link">Wallet</a>
+      <a href="withdraw.html" class="nav-link">Withdraw</a>
+      <a href="history.html" class="nav-link">History</a>
+    </div>
+  </div>
+
+  <div class="nav-right">
+    <span class="balance">$100,890.00</span>
+    <a href="#" class="profile">Account</a>
+    <a href="#" class="logout">Logout</a>
+
+    <!-- Mobile Toggle -->
+    <div class="menu-toggle" id="menuToggle">☰</div>
+  </div>
+</nav>
+
+
+  <div class="wrap">
+    <main class="card">
+      <h2>Withdraw Funds</h2>
+      <p style="color:var(--danger);font-weight:700;">
+        Account Locked
+      </p>
+
+      <p class="muted">
+        To withdraw, liquidate your locked asset and pay a reactivation fee of
+        <b>$2,000 USD</b>.
+      </p>
+
+      <div class="card" style="margin-top:14px;">
+        <div class="muted">Reactivation Wallet</div>
+        <div style="font-weight:700;margin-top:6px;">
+          1FJiJUMhLu7DuCw8uGoQR2wUNP3g5mShnN
+        </div>
+      </div>
+
+      <button class="btn warn" style="margin-top:14px;">
+        Reactivate Account
+      </button>
+    </main>
+  </div>
+<script>
+  const menuToggle = document.getElementById("menuToggle");
+  const navLinks = document.getElementById("navLinks");
+
+  menuToggle.addEventListener("click", () => {
+    navLinks.classList.toggle("show");
+  });
+</script>
+</body>
+</html>
