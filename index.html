@@ -104,8 +104,15 @@
   <div class="nav-right">
     <span class="balance">$100,890.00</span>
     <a href="#" class="profile">Account</a>
-    <a href="#" class="logout">Logout</a>
+   
+<button onclick="logout()">Logout</button>
 
+<script>
+  function logout() {
+    localStorage.removeItem("loggedIn");
+    window.location.href = "login.html";
+  }
+</script>
     <!-- Mobile Toggle -->
     <div class="menu-toggle" id="menuToggle">☰</div>
   </div>
